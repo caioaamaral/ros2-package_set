@@ -1,0 +1,1 @@
+colcon_package("sipacc_description", source="git@github.com:Brazilian-Institute-of-Robotics/sipacc_description.git")
