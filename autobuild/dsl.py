@@ -5,6 +5,6 @@ from .packages import Colcon
 
 @dsl.extension
 def colcon_package(name: str, source: str):
-    pkg = Colcon(name, source)
+    pkg = dsl.common_package(Colcon, name, source)
     pkg.dependencies = ['colcon']
-    AutobuildCollector.collect(pkg.name, pkg)
+    return pkg

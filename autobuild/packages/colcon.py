@@ -1,32 +1,39 @@
-import os
 import shutil
 
-from autoproj_py.autobuild.package import Package
-from autoproj_py.autobuild.parsers import ament_manifest_parser
+from autoproj_py.autobuild.packages.package import Package
+from .mixins import UsePackageXmlMixin
 
 
-class Colcon(Package):
+class Colcon(UsePackageXmlMixin, Package):
+
+    disable_native_logging = False
+
+    @classmethod
+    def disable_native_logging(cls):
+        cls.disable_native_logging = True
+
     def __init__(self, name: str, source: str):
         super().__init__(name, source)
-        self.build_dir = self.root_dir / "build" / self.name
-        self.install_dir = self.root_dir / "install" / self.name
-        self.use_package_xml = True
 
-    def build(self, registry, env=None, cwd=None, envsh=None):
-        super().build(registry, env=env, cwd=cwd, envsh=envsh)
-        self.make(env=env, cwd=cwd, envsh=envsh)
+    def build(self, env, cwd):
+        super().build(env=env, cwd=cwd)
+        self.make(env=env, cwd=cwd)
 
     def acquire(self):
         super().acquire()
 
-    def hydrate_dependencies(self):
-        package_xml_path = self.import_dir / 'package.xml'
-        self.dependencies = ament_manifest_parser.get_dependencies(package_xml_path)
+    def make(self, env, cwd):
+        global_args = []
+        if self.disable_native_logging:
+            global_args.append('--log-base /dev/null')
 
-    def make(self, envsh, env=None, cwd=None):
-        cmd = [
-            '.', f'{envsh}', '&&',
-            shutil.which('colcon'), 'build', '--base-paths', self.root_dir.as_posix(), '--install-base', self.install_dir.as_posix(),
-            '--packages-select', self.name
-        ]
-        self.run(cmd, cwd=self.build_dir, env=env)
+        cmake_args = []
+
+        cmd = f'{shutil.which("colcon")} {" ".join(global_args)} build ' \
+              f'--base-paths {self.root_dir.as_posix()} ' \
+              f'--install-base {self.install_dir.as_posix()} ' \
+              f'--executor sequential ' \
+              f'--event-handlers console_start_end+ ' \
+              f'--packages-select {self.name}'
+
+        self.run('build', cmd, cwd=cwd, env=env)
