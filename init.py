@@ -1,4 +1,4 @@
-import subprocess
+import sys
 from typing import TYPE_CHECKING
 
 import yaml
@@ -8,7 +8,11 @@ from . import helper
 if TYPE_CHECKING:
     from autoproj_py.autoproj import Autoproj
 
-ros_distro = Autoproj.run(['echo', '$ROS_DISTRO']).stdout.strip()
+ros_distro = Autoproj.config.ask('ros2.distro', 'Enter the ROS distribution to install')
+if not ros_distro:
+    Autoproj.error('ROS distribution not specified')
+    sys.exit(1)
+
 distributions_url = f'https://raw.githubusercontent.com/ros/rosdistro/master/{ros_distro}/distribution.yaml'
 
 Autoproj.execute_once(name='install-ros-repos', fn=helper.add_ros_repo)

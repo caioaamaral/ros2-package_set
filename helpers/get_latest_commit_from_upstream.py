@@ -16,10 +16,3 @@ def get_latest_commit_from_upstream(owner, repo, path, branch):
         raise ValueError(f'No commits found in {api_url}')
 
     return data[0]['sha']
-
-OWNER = "ros"
-REPO = "rosdistro"
-BRANCH = "master"
-PATH = "humble/distribution.yaml"
-
-# print(get_latest_commit_from_upstream(OWNER, REPO, PATH, BRANCH))
