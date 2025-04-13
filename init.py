@@ -1,3 +1,4 @@
+import sys
 from typing import TYPE_CHECKING
 
 import yaml
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 ros_distro = Autoproj.config.ask('ros2.distro', 'Enter the ROS distribution to install')
 if not ros_distro:
     Autoproj.error('ROS distribution not specified')
-    exit(1)
+    sys.exit(1)
 
 distributions_url = f'https://raw.githubusercontent.com/ros/rosdistro/master/{ros_distro}/distribution.yaml'
 
